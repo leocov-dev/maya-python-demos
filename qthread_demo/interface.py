@@ -1,12 +1,12 @@
 import json
 import urllib2
 
+from maya.app.general.mayaMixin import MayaQWidgetBaseMixin
+
 try:
     from PySide2 import QtCore, QtWidgets, QtGui
 except ImportError:
-    from vendor.Qt import QtCore, QWidgets, QtGui
-
-from maya.app.general.mayaMixin import MayaQWidgetBaseMixin
+    from vendor.Qt import QtCore, QtWidgets, QtGui
 
 
 def load():
@@ -65,7 +65,7 @@ class QThreadDemoWindow(MayaQWidgetBaseMixin, QtWidgets.QMainWindow):
         bold_text.setPointSize(8)
         bold_text.setBold(True)
 
-        label = QtWidgets.QLabel("Bacon Ipsum:")
+        label = QtWidgets.QLabel("Chuck Norris Jokes:")
         label.setFont(bold_text)
         layout.addWidget(label)
 
@@ -107,7 +107,7 @@ class QThreadDemoWindow(MayaQWidgetBaseMixin, QtWidgets.QMainWindow):
     def update_ui(self, tick, sentence):
         """ update the main ui's progress bar and text-box """
         self.progress_bar.setValue(tick)
-        self.te_sentences.appendPlainText(sentence)
+        self.te_sentences.appendHtml(sentence)
 
     def closeEvent(self, *args, **kwargs):
         """ when closing our window, close abort the thread safely first """
@@ -145,10 +145,18 @@ class ProgressThread(QtCore.QThread):
                 self.prog_abort.emit()
                 return
             sentence = "..."
-            response = urllib2.urlopen("https://baconipsum.com/api/?type=all-meat&sentences=1").read()
-            decode = json.loads(response)
-            if decode:
-                sentence = decode[0]
+            try:
+                # ideally i'd use the 'requests' lib but it has lots of dependencies
+                response = urllib2.urlopen("http://api.icndb.com/jokes/random").read()
+                decode = json.loads(response)
+                if decode:
+                    value = decode.get("value")
+                    if value:
+                        sentence = value.get("joke")
+            except urllib2.URLError as e:
+                print(e)
+                sentence = "Problem retrieving data from URL"
+
             self.prog_tick.emit(i, "{num:03d}.  {text}".format(num=i + 1, text=sentence))
 
         self.prog_done.emit(self.increments)
