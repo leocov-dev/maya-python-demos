@@ -26,7 +26,7 @@ def load():
 class QThreadDemoWindow(MayaQWidgetBaseMixin, QtWidgets.QMainWindow):
     """
     A small window with a progress bar, a button to start ops, a button to reset and an output text-box
-    When pushing start, the QThread will query a website for some random text, the progress bar will update,
+    When pushing start, the QThread will query a web api for some text, the progress bar will update,
     and the text will print in the text-box
     """
 
